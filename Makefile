@@ -1,4 +1,4 @@
-obj-m := system76.o
+obj-m := system76_legacy.o
 KERNEL_DIR = /lib/modules/$(shell uname -r)/build
 
 all:
