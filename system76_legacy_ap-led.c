@@ -28,12 +28,12 @@ static enum led_brightness ap_led_get(struct led_classdev *led_cdev) {
 
 static int ap_led_set(struct led_classdev *led_cdev, enum led_brightness value) {
 	u8 byte;
-	
+
 	ec_read(0xD9, &byte);
-	
+
 	if (value > 0) {
 		ap_led_brightness = 1;
-		
+
 		if (ap_led_invert) {
 			byte &= ~0x40;
 		} else {
@@ -41,16 +41,16 @@ static int ap_led_set(struct led_classdev *led_cdev, enum led_brightness value) 
 		}
 	} else {
 		ap_led_brightness = 0;
-		
+
 		if (ap_led_invert) {
 			byte |= 0x40;
 		} else {
 			byte &= ~0x40;
 		}
 	}
-	
+
 	ec_write(0xD9, byte);
-	
+
 	return 0;
 }
 
@@ -75,17 +75,17 @@ static ssize_t ap_led_invert_store(struct device *dev, struct device_attribute *
 	if (ret) {
 		return ret;
 	}
-	
+
 	brightness = ap_led_get(&ap_led);
-	
+
 	if (val) {
 		ap_led_invert = TRUE;
 	} else {
 		ap_led_invert = FALSE;
 	}
-	
+
 	ap_led_set(&ap_led, brightness);
-	
+
 	return size;
 }
 
@@ -109,11 +109,11 @@ static int __init ap_led_init(struct device *dev) {
 	if (unlikely(err)) {
 		return err;
 	}
-	
+
 	if (device_create_file(ap_led.dev, &ap_led_invert_dev_attr) != 0) {
 		S76LEGACY_ERROR("failed to create ap_led_invert\n");
 	}
-	
+
 	ap_led_resume();
 
 	return 0;
@@ -121,7 +121,7 @@ static int __init ap_led_init(struct device *dev) {
 
 static void __exit ap_led_exit(void) {
 	device_remove_file(ap_led.dev, &ap_led_invert_dev_attr);
-	
+
 	if (!IS_ERR_OR_NULL(ap_led.dev)) {
 		led_classdev_unregister(&ap_led);
 	}
