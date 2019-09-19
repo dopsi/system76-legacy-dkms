@@ -13,12 +13,8 @@ Supported models:
 To install this as a kernel module:
 
 ```sh
-# Compile the module
-make
-# Remove any old instances
-sudo modprobe -r system76_legacy
-# Insert the new module
-sudo insmod system76_legacy.ko
+# Compile and install the module
+make install
 # View log messages
 dmesg | grep system76_legacy
 ```
