@@ -59,7 +59,7 @@ static struct led_classdev ap_led = {
    .brightness_get = ap_led_get,
    .brightness_set_blocking = ap_led_set,
    .max_brightness = 1,
-   .default_trigger = "rfkill-any"
+   .default_trigger = "rfkill0"
 };
 
 static ssize_t ap_led_invert_show(struct device *dev, struct device_attribute *attr, char *buf) {
