@@ -1,6 +1,7 @@
 /*
  * ap_led.c
  *
+ * Copyright (C) 2019 Simon Doppler <dopsi@dopsi.ch>
  * Copyright (C) 2017 Jeremy Soller <jeremy@system76.com>
  *
  * This program is free software;  you can redistribute it and/or modify
@@ -54,7 +55,7 @@ static int ap_led_set(struct led_classdev *led_cdev, enum led_brightness value) 
 }
 
 static struct led_classdev ap_led = {
-   .name = "system76::airplane",
+   .name = "system76_legacy::airplane",
    .brightness_get = ap_led_get,
    .brightness_set_blocking = ap_led_set,
    .max_brightness = 1,
@@ -110,7 +111,7 @@ static int __init ap_led_init(struct device *dev) {
 	}
 	
 	if (device_create_file(ap_led.dev, &ap_led_invert_dev_attr) != 0) {
-		S76_ERROR("failed to create ap_led_invert\n");
+		S76LEGACY_ERROR("failed to create ap_led_invert\n");
 	}
 	
 	ap_led_resume();

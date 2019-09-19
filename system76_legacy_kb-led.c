@@ -1,6 +1,7 @@
 /*
  * kb_led.c
  *
+ * Copyright (C) 2019 Simon Doppler <dopsi@dopsi.ch>
  * Copyright (C) 2017 Jeremy Soller <jeremy@system76.com>
  *
  * This program is free software;  you can redistribute it and/or modify
@@ -61,7 +62,7 @@ static enum led_brightness kb_led_get(struct led_classdev *led_cdev) {
 }
 
 static int kb_led_set(struct led_classdev *led_cdev, enum led_brightness value) {
-	S76_DEBUG("kb_led_set %d\n", (int)value);
+	S76LEGACY_DEBUG("kb_led_set %d\n", (int)value);
 
 	if (!s76_wmbb(SET_KB_LED, 0xF4000000 | value, NULL)) {
 		kb_led_brightness = value;
@@ -73,7 +74,7 @@ static int kb_led_set(struct led_classdev *led_cdev, enum led_brightness value) 
 static void kb_led_color_set(enum kb_led_region region, union kb_led_color color) {
 	u32 cmd;
 
-	S76_DEBUG("kb_led_color_set %d %06X\n", (int)region, (int)color.rgb);
+	S76LEGACY_DEBUG("kb_led_color_set %d %06X\n", (int)region, (int)color.rgb);
 
 	switch (region) {
 	case KB_LED_REGION_LEFT:
@@ -102,7 +103,7 @@ static void kb_led_color_set(enum kb_led_region region, union kb_led_color color
 }
 
 static struct led_classdev kb_led = {
-	.name = "system76::kbd_backlight",
+	.name = "system76_legacy::kbd_backlight",
 	.flags = LED_BRIGHT_HW_CHANGED,
 	.brightness_get = kb_led_get,
 	.brightness_set_blocking = kb_led_set,
@@ -198,19 +199,19 @@ static struct device_attribute kb_led_color_extra_dev_attr = {
 };
 
 static void kb_led_enable(void) {
-	S76_DEBUG("kb_led_enable\n");
+	S76LEGACY_DEBUG("kb_led_enable\n");
 
 	s76_wmbb(SET_KB_LED, 0xE007F001, NULL);
 }
 
 static void kb_led_disable(void) {
-	S76_DEBUG("kb_led_disable\n");
+	S76LEGACY_DEBUG("kb_led_disable\n");
 
 	s76_wmbb(SET_KB_LED, 0xE0003001, NULL);
 }
 
 static void kb_led_suspend(void) {
-	S76_DEBUG("kb_led_suspend\n");
+	S76LEGACY_DEBUG("kb_led_suspend\n");
 
 	// Disable keyboard backlight
 	kb_led_disable();
@@ -219,7 +220,7 @@ static void kb_led_suspend(void) {
 static void kb_led_resume(void) {
 	enum kb_led_region region;
 
-	S76_DEBUG("kb_led_resume\n");
+	S76LEGACY_DEBUG("kb_led_resume\n");
 
 	// Disable keyboard backlight
 	kb_led_disable();
@@ -245,19 +246,19 @@ static int __init kb_led_init(struct device *dev) {
 	}
 
 	if (device_create_file(kb_led.dev, &kb_led_color_left_dev_attr) != 0) {
-		S76_ERROR("failed to create kb_led_color_left\n");
+		S76LEGACY_ERROR("failed to create kb_led_color_left\n");
 	}
 
 	if (device_create_file(kb_led.dev, &kb_led_color_center_dev_attr) != 0) {
-		S76_ERROR("failed to create kb_led_color_center\n");
+		S76LEGACY_ERROR("failed to create kb_led_color_center\n");
 	}
 
 	if (device_create_file(kb_led.dev, &kb_led_color_right_dev_attr) != 0) {
-		S76_ERROR("failed to create kb_led_color_right\n");
+		S76LEGACY_ERROR("failed to create kb_led_color_right\n");
 	}
 
 	if (device_create_file(kb_led.dev, &kb_led_color_extra_dev_attr) != 0) {
-		S76_ERROR("failed to create kb_led_color_extra\n");
+		S76LEGACY_ERROR("failed to create kb_led_color_extra\n");
 	}
 
 	kb_led_resume();
@@ -277,7 +278,7 @@ static void __exit kb_led_exit(void) {
 }
 
 static void kb_wmi_brightness(enum led_brightness value) {
-	S76_DEBUG("kb_wmi_brightness %d\n", (int)value);
+	S76LEGACY_DEBUG("kb_wmi_brightness %d\n", (int)value);
 
 	kb_led_set(&kb_led, value);
 	led_classdev_notify_brightness_hw_changed(&kb_led, value);

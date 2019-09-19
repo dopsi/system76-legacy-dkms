@@ -45,12 +45,12 @@ static int is_card_disabled(void) {
 
             if (tmp_dev->vendor == PCI_VENDOR_ID_NVIDIA) {
                 sub_dev = tmp_dev;
-                S76_INFO("Found NVIDIA audio device %s\n", dev_name(&tmp_dev->dev));
+                S76LEGACY_INFO("Found NVIDIA audio device %s\n", dev_name(&tmp_dev->dev));
             }
         }
 
         if (sub_dev == NULL) {
-            S76_INFO("No NVIDIA audio device found, unsetting config bit.\n");
+            S76LEGACY_INFO("No NVIDIA audio device found, unsetting config bit.\n");
             cfg_word|=0x2000000;
             pci_write_config_dword(dis_dev, 0x488, cfg_word);
             return 1;
@@ -72,7 +72,7 @@ static void nv_hda_off(void) {
     pci_dev_put(sub_dev);
     pci_stop_and_remove_bus_device(sub_dev);
 
-    S76_INFO("NVIDIA audio: disabling\n");
+    S76LEGACY_INFO("NVIDIA audio: disabling\n");
 
     //setting bit to turn off
     pci_read_config_dword(dis_dev, 0x488, &cfg_word);
@@ -88,7 +88,7 @@ static void nv_hda_on(void) {
         return;
     }
 
-    S76_INFO("NVIDIA audio: enabling\n");
+    S76LEGACY_INFO("NVIDIA audio: enabling\n");
 
     // read,set bit, write config word at 0x488
     pci_read_config_dword(dis_dev, 0x488, &cfg_word);
@@ -99,17 +99,17 @@ static void nv_hda_on(void) {
 	pci_read_config_byte(dis_dev, PCI_HEADER_TYPE, &hdr_type);
 
 	if (!(hdr_type & 0x80)) {
-        S76_ERROR("NVIDIA not multifunction, no audio\n");
+        S76LEGACY_ERROR("NVIDIA not multifunction, no audio\n");
 		return;
     }
 
 	sub_dev = pci_scan_single_device(dis_dev->bus, 1);
 	if (!sub_dev) {
-        S76_ERROR("No NVIDIA audio device found\n");
+        S76LEGACY_ERROR("No NVIDIA audio device found\n");
 		return;
     }
 
-    S76_INFO("NVIDIA audio found, adding\n");
+    S76LEGACY_INFO("NVIDIA audio found, adding\n");
 	pci_assign_unassigned_bus_resources(dis_dev->bus);
 	pci_bus_add_devices(dis_dev->bus);
     pci_dev_get(sub_dev);
@@ -141,12 +141,12 @@ static int __init nv_hda_init(struct device *dev) {
 
         if (pdev->vendor == PCI_VENDOR_ID_NVIDIA) {
             dis_dev = pdev;
-            S76_INFO("NVIDIA device %s\n", dev_name(&pdev->dev));
+            S76LEGACY_INFO("NVIDIA device %s\n", dev_name(&pdev->dev));
         }
     }
 
     if (dis_dev == NULL) {
-        S76_ERROR("No NVIDIA device found\n");
+        S76LEGACY_ERROR("No NVIDIA device found\n");
         return -ENODEV;
     }
 
@@ -154,7 +154,7 @@ static int __init nv_hda_init(struct device *dev) {
 
     nv_hda_on();
 
-    S76_INFO("NVIDIA Audio %s is %s\n", dev_name(&dis_dev->dev), is_card_disabled() ? "off" : "on");
+    S76LEGACY_INFO("NVIDIA Audio %s is %s\n", dev_name(&dis_dev->dev), is_card_disabled() ? "off" : "on");
 
     dis_dev_put();
 

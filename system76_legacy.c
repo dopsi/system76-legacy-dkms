@@ -1,6 +1,7 @@
 /*
- * system76.c
+ * system76_legacy.c
  *
+ * Copyright (C) 2019 Simon Doppler <dopsi@dopsi.ch>
  * Copyright (C) 2017 Jeremy Soller <jeremy@system76.com>
  * Copyright (C) 2014-2016 Arnoud Willemsen <mail@lynthium.com>
  * Copyright (C) 2013-2015 TUXEDO Computers GmbH <tux@tuxedocomputers.com>
@@ -19,8 +20,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define S76_DRIVER_NAME KBUILD_MODNAME
-#define pr_fmt(fmt) S76_DRIVER_NAME ": " fmt
+#define S76LEGACY_DRIVER_NAME KBUILD_MODNAME
+#define pr_fmt(fmt) S76LEGACY_DRIVER_NAME ": " fmt
 
 #include <linux/acpi.h>
 #include <linux/delay.h>
@@ -43,19 +44,19 @@
 #include <linux/version.h>
 #include <linux/workqueue.h>
 
-#define __S76_PR(lvl, fmt, ...) do { pr_##lvl(fmt, ##__VA_ARGS__); } \
+#define __S76LEGACY_PR(lvl, fmt, ...) do { pr_##lvl(fmt, ##__VA_ARGS__); } \
 		while (0)
-#define S76_INFO(fmt, ...) __S76_PR(info, fmt, ##__VA_ARGS__)
-#define S76_ERROR(fmt, ...) __S76_PR(err, fmt, ##__VA_ARGS__)
-#define S76_DEBUG(fmt, ...) __S76_PR(debug, "[%s:%u] " fmt, \
+#define S76LEGACY_INFO(fmt, ...) __S76LEGACY_PR(info, fmt, ##__VA_ARGS__)
+#define S76LEGACY_ERROR(fmt, ...) __S76LEGACY_PR(err, fmt, ##__VA_ARGS__)
+#define S76LEGACY_DEBUG(fmt, ...) __S76LEGACY_PR(debug, "[%s:%u] " fmt, \
 		__func__, __LINE__, ##__VA_ARGS__)
 
-#define S76_EVENT_GUID  "ABBC0F6B-8EA1-11D1-00A0-C90629100000"
-#define S76_WMBB_GUID    "ABBC0F6D-8EA1-11D1-00A0-C90629100000"
+#define S76LEGACY_EVENT_GUID  "ABBC0F6B-8EA1-11D1-00A0-C90629100000"
+#define S76LEGACY_WMBB_GUID    "ABBC0F6D-8EA1-11D1-00A0-C90629100000"
 
-#define S76_HAS_HWMON (defined(CONFIG_HWMON) || (defined(MODULE) && defined(CONFIG_HWMON_MODULE)))
+#define S76LEGACY_HAS_HWMON (defined(CONFIG_HWMON) || (defined(MODULE) && defined(CONFIG_HWMON_MODULE)))
 
-/* method IDs for S76_GET */
+/* method IDs for S76LEGACY_GET */
 #define GET_EVENT               0x01  /*   1 */
 
 #define DRIVER_AP_KEY (1 << 0)
@@ -77,9 +78,9 @@ static int s76_wmbb(u32 method_id, u32 arg, u32 *retval) {
 	acpi_status status;
 	u32 tmp;
 
-	S76_DEBUG("%0#4x  IN : %0#6x\n", method_id, arg);
+	S76LEGACY_DEBUG("%0#4x  IN : %0#6x\n", method_id, arg);
 
-	status = wmi_evaluate_method(S76_WMBB_GUID, 0, method_id, &in, &out);
+	status = wmi_evaluate_method(S76LEGACY_WMBB_GUID, 0, method_id, &in, &out);
 
 	if (unlikely(ACPI_FAILURE(status))) {
 		return -EIO;
@@ -92,7 +93,7 @@ static int s76_wmbb(u32 method_id, u32 arg, u32 *retval) {
 		tmp = 0;
 	}
 
-	S76_DEBUG("%0#4x  OUT: %0#6x (IN: %0#6x)\n", method_id, tmp, arg);
+	S76LEGACY_DEBUG("%0#4x  OUT: %0#6x (IN: %0#6x)\n", method_id, tmp, arg);
 
 	if (likely(retval)) {
 		*retval = tmp;
@@ -103,23 +104,23 @@ static int s76_wmbb(u32 method_id, u32 arg, u32 *retval) {
 	return 0;
 }
 
-#include "system76_ap-led.c"
-#include "system76_input.c"
-#include "system76_kb-led.c"
-#include "system76_hwmon.c"
-#include "system76_nv_hda.c"
+#include "system76_legacy_ap-led.c"
+#include "system76_legacy_input.c"
+#include "system76_legacy_kb-led.c"
+#include "system76_legacy_hwmon.c"
+#include "system76_legacy_nv_hda.c"
 
 static void s76_wmi_notify(u32 value, void *context) {
 	u32 event;
 
 	if (value != 0xD0) {
-		S76_DEBUG("Unexpected WMI event (%0#6x)\n", value);
+		S76LEGACY_DEBUG("Unexpected WMI event (%0#6x)\n", value);
 		return;
 	}
 
 	s76_wmbb(GET_EVENT, 0, &event);
 
-	S76_DEBUG("WMI event code (%x)\n", event);
+	S76LEGACY_DEBUG("WMI event code (%x)\n", event);
 
 	switch (event) {
 	case 0x81:
@@ -165,7 +166,7 @@ static void s76_wmi_notify(u32 value, void *context) {
 		// Touchpad WMI (enable)
 		break;
 	default:
-		S76_DEBUG("Unknown WMI event code (%x)\n", event);
+		S76LEGACY_DEBUG("Unknown WMI event code (%x)\n", event);
 		break;
 	}
 }
@@ -176,25 +177,25 @@ static int s76_probe(struct platform_device *dev) {
 	if (driver_flags & DRIVER_AP_LED) {
 		err = ap_led_init(&dev->dev);
 		if (unlikely(err)) {
-			S76_ERROR("Could not register LED device\n");
+			S76LEGACY_ERROR("Could not register LED device\n");
 		}
 	}
 
 	if (driver_flags & DRIVER_KB_LED) {
 		err = kb_led_init(&dev->dev);
 		if (unlikely(err)) {
-			S76_ERROR("Could not register LED device\n");
+			S76LEGACY_ERROR("Could not register LED device\n");
 		}
 	}
 
 	if (driver_flags & DRIVER_INPUT) {
 		err = s76_input_init(&dev->dev);
 		if (unlikely(err)) {
-			S76_ERROR("Could not register input device\n");
+			S76LEGACY_ERROR("Could not register input device\n");
 		}
 	}
 
-#ifdef S76_HAS_HWMON
+#ifdef S76LEGACY_HAS_HWMON
 	if (driver_flags & DRIVER_HWMON) {
 		s76_hwmon_init(&dev->dev);
 	}
@@ -202,12 +203,12 @@ static int s76_probe(struct platform_device *dev) {
 
 	err = nv_hda_init(&dev->dev);
 	if (unlikely(err)) {
-		S76_ERROR("Could not register NVIDIA audio device\n");
+		S76LEGACY_ERROR("Could not register NVIDIA audio device\n");
 	}
 
-	err = wmi_install_notify_handler(S76_EVENT_GUID, s76_wmi_notify, NULL);
+	err = wmi_install_notify_handler(S76LEGACY_EVENT_GUID, s76_wmi_notify, NULL);
 	if (unlikely(ACPI_FAILURE(err))) {
-		S76_ERROR("Could not register WMI notify handler (%0#6x)\n", err);
+		S76LEGACY_ERROR("Could not register WMI notify handler (%0#6x)\n", err);
 		return -EIO;
 	}
 
@@ -223,10 +224,10 @@ static int s76_probe(struct platform_device *dev) {
 }
 
 static int s76_remove(struct platform_device *dev) {
-	wmi_remove_notify_handler(S76_EVENT_GUID);
+	wmi_remove_notify_handler(S76LEGACY_EVENT_GUID);
 
 	nv_hda_exit();
-	#ifdef S76_HAS_HWMON
+	#ifdef S76LEGACY_HAS_HWMON
 	if (driver_flags & DRIVER_HWMON) {
 		s76_hwmon_fini(&dev->dev);
 	}
@@ -245,7 +246,7 @@ static int s76_remove(struct platform_device *dev) {
 }
 
 static int s76_suspend(struct platform_device *dev, pm_message_t status) {
-	S76_DEBUG("s76_suspend\n");
+	S76LEGACY_DEBUG("s76_suspend\n");
 
 	if (driver_flags & DRIVER_KB_LED) {
 		kb_led_suspend();
@@ -255,7 +256,7 @@ static int s76_suspend(struct platform_device *dev, pm_message_t status) {
 }
 
 static int s76_resume(struct platform_device *dev) {
-	S76_DEBUG("s76_resume\n");
+	S76LEGACY_DEBUG("s76_resume\n");
 
 	msleep(2000);
 
@@ -282,13 +283,13 @@ static struct platform_driver s76_platform_driver = {
 	.suspend = s76_suspend,
 	.resume = s76_resume,
 	.driver = {
-		.name  = S76_DRIVER_NAME,
+		.name  = S76LEGACY_DRIVER_NAME,
 		.owner = THIS_MODULE,
 	},
 };
 
 static int __init s76_dmi_matched(const struct dmi_system_id *id) {
-	S76_INFO("Model %s found\n", id->ident);
+	S76LEGACY_INFO("Model %s found\n", id->ident);
 	driver_flags = (uint64_t)id->driver_data;
 	return 1;
 }
@@ -342,22 +343,22 @@ MODULE_DEVICE_TABLE(dmi, s76_dmi_table);
 
 static int __init s76_init(void) {
 	if (!dmi_check_system(s76_dmi_table)) {
-		S76_INFO("Model does not utilize this driver");
+		S76LEGACY_INFO("Model does not utilize this driver");
 		return -ENODEV;
 	}
 
 	if (!driver_flags) {
-		S76_INFO("Driver data not defined");
+		S76LEGACY_INFO("Driver data not defined");
 		return -ENODEV;
 	}
 
-	if (!wmi_has_guid(S76_EVENT_GUID)) {
-		S76_INFO("No known WMI event notification GUID found\n");
+	if (!wmi_has_guid(S76LEGACY_EVENT_GUID)) {
+		S76LEGACY_INFO("No known WMI event notification GUID found\n");
 		return -ENODEV;
 	}
 
-	if (!wmi_has_guid(S76_WMBB_GUID)) {
-		S76_INFO("No known WMI control method GUID found\n");
+	if (!wmi_has_guid(S76LEGACY_WMBB_GUID)) {
+		S76LEGACY_INFO("No known WMI control method GUID found\n");
 		return -ENODEV;
 	}
 
@@ -379,7 +380,7 @@ static void __exit s76_exit(void) {
 module_init(s76_init);
 module_exit(s76_exit);
 
-MODULE_AUTHOR("Jeremy Soller <jeremy@system76.com>");
-MODULE_DESCRIPTION("System76 laptop driver");
+MODULE_AUTHOR("Simon Doppler <dopsi@dopsi.ch>");
+MODULE_DESCRIPTION("System76 laptop driver for older laptops");
 MODULE_LICENSE("GPL");
 MODULE_VERSION("1.0.0");

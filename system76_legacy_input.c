@@ -1,6 +1,7 @@
 /*
  * input.c
  *
+ * Copyright (C) 2019 Simon Doppler <dopsi@dopsi.ch>
  * Copyright (C) 2017 Jeremy Soller <jeremy@system76.com>
  * Copyright (C) 2014-2016 Arnoud Willemsen <mail@lynthium.com>
  * Copyright (C) 2013-2015 TUXEDO Computers GmbH <tux@tuxedocomputers.com>
@@ -57,7 +58,7 @@ MODULE_PARM_DESC(poll_freq, "Set polling frequency");
 static struct task_struct *s76_input_polling_task;
 
 static void s76_input_key(unsigned int code) {
-	S76_DEBUG("Send key %x\n", code);
+	S76LEGACY_DEBUG("Send key %x\n", code);
 
 	mutex_lock(&s76_input_report_mutex);
 
@@ -71,7 +72,7 @@ static void s76_input_key(unsigned int code) {
 }
 
 static int s76_input_polling_thread(void *data) {
-	S76_DEBUG("Polling thread started (PID: %i), polling at %i Hz\n",
+	S76LEGACY_DEBUG("Polling thread started (PID: %i), polling at %i Hz\n",
 				current->pid, param_poll_freq);
 
 	while (!kthread_should_stop()) {
@@ -81,7 +82,7 @@ static int s76_input_polling_thread(void *data) {
 		if (byte & 0x40) {
 			ec_write(0xDB, byte & ~0x40);
 
-			S76_DEBUG("Airplane-Mode Hotkey pressed (EC)\n");
+			S76LEGACY_DEBUG("Airplane-Mode Hotkey pressed (EC)\n");
 
 			s76_input_key(AIRPLANE_KEY);
 		}
@@ -89,16 +90,16 @@ static int s76_input_polling_thread(void *data) {
 		msleep_interruptible(1000 / param_poll_freq);
 	}
 
-	S76_DEBUG("Polling thread exiting\n");
+	S76LEGACY_DEBUG("Polling thread exiting\n");
 
 	return 0;
 }
 
 static void s76_input_airplane_wmi(void) {
-	S76_DEBUG("Airplane-Mode Hotkey pressed (WMI)\n");
+	S76LEGACY_DEBUG("Airplane-Mode Hotkey pressed (WMI)\n");
 
 	if (s76_input_polling_task) {
-		S76_DEBUG("Stopping polling thread\n");
+		S76LEGACY_DEBUG("Stopping polling thread\n");
 		kthread_stop(s76_input_polling_task);
 		s76_input_polling_task = NULL;
 	}
@@ -107,7 +108,7 @@ static void s76_input_airplane_wmi(void) {
 }
 
 static void s76_input_screen_wmi(void) {
-	S76_DEBUG("Screen Hotkey pressed (WMI)\n");
+	S76LEGACY_DEBUG("Screen Hotkey pressed (WMI)\n");
 
 	s76_input_key(SCREEN_KEY);
 }
@@ -116,12 +117,12 @@ static int s76_input_open(struct input_dev *dev) {
 	if (driver_flags & DRIVER_AP_KEY) {
 		s76_input_polling_task = kthread_run(
 			s76_input_polling_thread,
-			NULL, "system76-polld");
+			NULL, "system76_legacy-polld");
   }
 
 	if (unlikely(IS_ERR(s76_input_polling_task))) {
 		s76_input_polling_task = NULL;
-		S76_ERROR("Could not create polling thread\n");
+		S76LEGACY_ERROR("Could not create polling thread\n");
 		return PTR_ERR(s76_input_polling_task);
 	}
 
@@ -143,12 +144,12 @@ static int __init s76_input_init(struct device *dev) {
 
 	s76_input_device = input_allocate_device();
 	if (unlikely(!s76_input_device)) {
-		S76_ERROR("Error allocating input device\n");
+		S76LEGACY_ERROR("Error allocating input device\n");
 		return -ENOMEM;
 	}
 
-	s76_input_device->name = "System76 Hotkeys";
-	s76_input_device->phys = "system76/input0";
+	s76_input_device->name = "System76 (legacy) Hotkeys";
+	s76_input_device->phys = "system76_legacy/input0";
 	s76_input_device->id.bustype = BUS_HOST;
 	s76_input_device->dev.parent = dev;
 	set_bit(EV_KEY, s76_input_device->evbit);
@@ -166,7 +167,7 @@ static int __init s76_input_init(struct device *dev) {
 
 	err = input_register_device(s76_input_device);
 	if (unlikely(err)) {
-		S76_ERROR("Error registering input device\n");
+		S76LEGACY_ERROR("Error registering input device\n");
 		goto err_free_input_device;
 	}
 

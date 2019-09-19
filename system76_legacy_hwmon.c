@@ -1,6 +1,7 @@
 /*
  * fan.c
  *
+ * Copyright (C) 2019 Simon Doppler <dopsi@dopsi.ch>
  * Copyright (C) 2017 Jeremy Soller <jeremy@system76.com>
  * Copyright (C) 2014-2016 Arnoud Willemsen <mail@lynthium.com>
  * Copyright (C) 2013-2015 TUXEDO Computers GmbH <tux@tuxedocomputers.com>
@@ -21,7 +22,7 @@
 
 #define EXPERIMENTAL
 
-#if S76_HAS_HWMON
+#if S76LEGACY_HAS_HWMON
 struct s76_hwmon {
 	struct device *dev;
 };
@@ -64,7 +65,7 @@ static ssize_t
 s76_hwmon_show_name(struct device *dev, struct device_attribute *attr,
 			  char *buf)
 {
-	return sprintf(buf, S76_DRIVER_NAME "\n");
+	return sprintf(buf, S76LEGACY_DRIVER_NAME "\n");
 }
 
 static ssize_t
@@ -276,4 +277,4 @@ s76_hwmon_fini(struct device *dev) {
 	kfree(s76_hwmon);
 	return 0;
 }
-#endif // S76_HAS_HWMON
+#endif // S76LEGACY_HAS_HWMON
