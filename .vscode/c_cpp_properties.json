@@ -1,0 +1,30 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/usr/lib/modules/5.2.14-arch2-1-ARCH/build/include/",
+                "/usr/lib/modules/5.2.14-arch2-1-ARCH/build/arch/x86/include/",
+                "/usr/lib/modules/5.2.14-arch2-1-ARCH/build/arch/x86/include/generated/"
+            ],
+            "defines": [
+                "__KERNEL__",
+                "KBUILD_MODNAME=\"system76_legacy\""
+            ],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "gcc-x64",
+            "browse": {
+                "path": [
+                "${workspaceRoot}",
+                "/usr/lib/modules/5.2.14-arch2-1-ARCH/build/include/",
+                "/usr/lib/modules/5.2.14-arch2-1-ARCH/build/arch/x86/include/",
+                "/usr/lib/modules/5.2.14-arch2-1-ARCH/build/arch/x86/include/generated/"
+                ]
+            }
+        }
+    ],
+    "version": 4
+}
