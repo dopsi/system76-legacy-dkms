@@ -383,4 +383,4 @@ module_exit(s76_exit);
 MODULE_AUTHOR("Simon Doppler <dopsi@dopsi.ch>");
 MODULE_DESCRIPTION("System76 laptop driver for older laptops");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.0.0");
+MODULE_VERSION("2.0.0");
